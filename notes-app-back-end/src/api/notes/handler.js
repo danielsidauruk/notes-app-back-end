@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 class NotesHandler {
   constructor(service, validator) {
     this._service = service;
