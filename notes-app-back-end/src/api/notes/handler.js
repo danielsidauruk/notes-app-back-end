@@ -1,6 +1,4 @@
 /* eslint-disable no-unused-vars */
-const ClientError = require('../../exceptions/ClientError');
-
 class NotesHandler {
   constructor(service, validator) {
     this._service = service;
@@ -11,6 +9,7 @@ class NotesHandler {
     this.getNoteByIdHandler = this.getNoteByIdHandler.bind(this);
     this.putNoteByIdHandler = this.putNoteByIdHandler.bind(this);
     this.deleteNoteByIdHandler = this.deleteNoteByIdHandler.bind(this);
+    this.getUsersByUsernameHandler = this.getUsersByUsernameHandler.bind(this);
   }
 
   async postNoteHandler(request, h) {
@@ -60,11 +59,11 @@ class NotesHandler {
 
   async putNoteByIdHandler(request, h) {
     this._validator.validateNotePayload(request.payload);
-    const { id } = request.params;
-    const { id: credentialId } = request.auth.credentials;
+    const { id } = request.params; const { id: credentialId } = request.auth.credentials;
 
     await this._service.verifyNoteAccess(id, credentialId);
-    await this._service.editNoteById(id, request.payload);
+    this._service.editNoteById(id, request.payload);
+
     return {
       status: 'success',
       message: 'Catatan berhasil diperbarui',
@@ -72,35 +71,27 @@ class NotesHandler {
   }
 
   async deleteNoteByIdHandler(request, h) {
-    try {
-      const { id } = request.params;
-      const { id: credentialId } = request.auth.credentials;
-      await this._service.verifyNoteOwner(id, credentialId);
-      await this._service.deleteNoteById(id);
+    const { id } = request.params;
+    const { id: credentialId } = request.auth.credentials;
 
-      return {
-        status: 'success',
-        message: 'Catatan berhasil dihapus',
-      };
-    } catch (error) {
-      if (error instanceof ClientError) {
-        const response = h.response({
-          status: 'fail',
-          message: error.message,
-        });
-        response.code(error.statusCode);
-        return response;
-      }
+    await this._service.verifyNoteOwner(id, credentialId);
+    this._service.deleteNoteById(id);
 
-      // Server ERROR!
-      const response = h.response({
-        status: 'error',
-        message: 'Maaf, terjadi kegagalan pada server kami.',
-      });
-      response.code(500);
-      console.error(error);
-      return response;
-    }
+    return {
+      status: 'success',
+      message: 'Catatan berhasil dihapus',
+    };
+  }
+
+  async getUsersByUsernameHandler(request, h) {
+    const { username = '' } = request.query;
+    const users = await this._service.getUsersByUsername(username);
+    return {
+      status: 'success',
+      data: {
+        users,
+      },
+    };
   }
 }
 

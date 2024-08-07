@@ -1,6 +1,5 @@
-/* eslint-disable import/no-extraneous-dependencies */
-const { nanoid } = require('nanoid');
 const { Pool } = require('pg');
+const { nanoid } = require('nanoid');
 const bcrypt = require('bcrypt');
 const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
@@ -26,15 +25,6 @@ class UsersService {
       throw new InvariantError('User gagal ditambahkan');
     }
     return result.rows[0].id;
-  }
-
-  async getUsersByUsername(username) {
-    const query = {
-      text: 'SELECT id, username, fullname FROM users WHERE username LIKE $1',
-      values: [`%${username}%`],
-    };
-    const result = await this._pool.query(query);
-    return result.rows;
   }
 
   async verifyNewUsername(username) {
@@ -84,6 +74,7 @@ class UsersService {
     if (!match) {
       throw new AuthenticationError('Kredensial yang Anda berikan salah');
     }
+
     return id;
   }
 }
