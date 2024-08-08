@@ -1,5 +1,7 @@
 const { S3Client, PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
-const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
+const {
+  getSignedUrl,
+} = require('@aws-sdk/s3-request-presigner');
 
 class StorageService {
   constructor() {
@@ -10,8 +12,6 @@ class StorageService {
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
       },
     });
-
-    this.writeFile = this.writeFile.bind(this);
   }
 
   async writeFile(file, meta) {
@@ -22,11 +22,18 @@ class StorageService {
       ContentType: meta.headers['content-type'],
     });
 
-    await this._S3.send(parameter);
+    return new Promise((resolve, reject) => {
+      const url = this.createPreSignedUrl({
+        bucket: process.env.AWS_BUCKET_NAME,
+        key: meta.filename,
+      });
+      this._S3.send(parameter, (error) => {
+        if (error) {
+          return reject(error);
+        }
 
-    return this.createPreSignedUrl({
-      bucket: process.env.AWS_BUCKET_NAME,
-      key: meta.filename,
+        return resolve(url);
+      });
     });
   }
 
