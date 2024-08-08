@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 class UsersHandler {
   constructor(service, validator) {
     this._service = service;
