@@ -4,3 +4,4 @@ node_modules
 .prod.env
 package-lock.json
 .DS_Store
+notes-app-back-end/src/api/uploads/file
